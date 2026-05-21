@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vote4Doug — Head Student 2026</title>
+  <meta name="description" content="Vote for Doug as Head Student at The Suthers School. Building an honest, open community." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔥 Your live Firebase configuration seamlessly integrated
+    const firebaseConfig = {
+      apiKey: "AIzaSyA5YgUasOCJbmGIy_HlmfN2E_mokvs1wyM",
+      authDomain: "vote4doug-f82ab.firebaseapp.com",
+      projectId: "vote4doug-f82ab",
+      storageBucket: "vote4doug-f82ab.firebasestorage.app",
+      messagingSenderId: "1066890089032",
+      appId: "1:1066890089032:web:0715c7210558df05847e7d",
+      measurementId: "G-DRW92F4S1G"
+    };
+
+    let db;
+    let firebaseReady = false;
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app); // Connects the layout directly to your database
+      firebaseReady = true;
+    } catch(e) {
+      console.warn("Firebase failed to initialize. Running in local fallback/demo mode.", e);
+    }
+
+    // ─── VOTE COUNTER ───────────────────────────────────────────
+    const voteDocRef = () => firebaseReady ? doc(db, "meta", "voteCount") : null;
+
+    async function initVoteCounter() {
+      if (!firebaseReady) {
+        updateVoteDisplay(Math.floor(Math.random() * 40) + 12);
+        return;
+      }
+      const ref = voteDocRef();
+      try {
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, { count: 0 });
+        }
+        onSnapshot(ref, (d) => {
+          if (d.exists()) updateVoteDisplay(d.data().count);
+        });
+      } catch (error) {
+        console.error("Error setting up vote counter:", error);
+      }
+    }
+
+    function updateVoteDisplay(count) {
+      const el = document.getElementById("vote-count");
+      if (el) {
+        el.textContent = count.toLocaleString();
+        el.classList.add("pop");
+        setTimeout(() => el.classList.remove("pop"), 400);
+      }
+    }
+
+    window.castVote = async function() {
+      const btn = document.getElementById("vote-btn");
+      const storageKey = "doug_voted";
+      if (localStorage.getItem(storageKey)) {
+        showVoteMessage("You've already pledged your vote — legend! 🎉", false);
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = "Counting…";
+      
+      if (firebaseReady) {
+        try {
+          const ref = voteDocRef();
+          await updateDoc(ref, { count: increment(1) });
+        } catch (error) {
+          console.error("Error casting vote:", error);
+          btn.disabled = false;
+          btn.textContent = "🗳️  I'm voting for Doug";
+          return;
+        }
+      } else {
+        const current = parseInt(document.getElementById("vote-count").textContent.replace(/,/g, "")) || 0;
+        updateVoteDisplay(current + 1);
+      }
+      
+      localStorage.setItem(storageKey, "1");
+      btn.textContent = "Vote Pledged ✓";
+      btn.classList.add("voted");
+      showVoteMessage("Your vote is in! Doug appreciates you. 🙌", true);
+    };
+
+    function showVoteMessage(msg, success) {
+      const el = document.getElementById("vote-message");
+      if (!el) return;
+      el.textContent = msg;
+      el.className = "vote-msg " + (success ? "success" : "already");
+      el.style.opacity = "1";
+      setTimeout(() => { el.style.opacity = "0"; }, 3000);
+    }
+
+    // ─── STICKY NOTES ────────────────────────────────────────────
+    const BAD_WORDS = ["fuck","shit","cunt","bitch","bastard","arse","arsehole","asshole","ass","damn","bollocks","wanker","twat","dick","prick","cock","piss","crap","whore","slut","nigger","faggot","retard","spastic","idiot","moron","stupid","hate","kill","die","dead","ugly","fat","loser","goon","gooning","douche","douchebag","cum","pussy","fucker","motherfucker","nigga",];
+
+    function containsProfanity(text) {
+      const lower = text.toLowerCase().replace(/[^a-z\s]/gi,"");
+      return BAD_WORDS.some(w => {
+        const re = new RegExp(`\\b${w}\\b`,"i");
+        return re.test(lower);
+      });
+    }
+
+    const NOTE_COLORS = ["#fff0f0","#fff7f0","#fffbf0","#f0fff4","#f0f4ff","#fdf0ff"];
+
+    function renderNote(data, id) {
+      const board = document.getElementById("notes-board");
+      if (!board) return;
+      
+      const emptyMsg = board.querySelector(".empty-board-msg");
+      if (emptyMsg) emptyMsg.remove();
+
+      const existing = document.getElementById("note-" + id);
+      if (existing) return;
+
+      const color = NOTE_COLORS[Math.abs(hashCode(id)) % NOTE_COLORS.length];
+      const rotate = ((hashCode(id) % 7) - 3) + "deg";
+      const timeStr = data.timestamp?.toDate ? data.timestamp.toDate().toLocaleDateString("en-GB", {day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : "Just now";
+
+      const note = document.createElement("div");
+      note.className = "sticky-note";
+      note.id = "note-" + id;
+      note.style.cssText = `background:${color};transform:rotate(${rotate})`;
+      note.innerHTML = `
+        <p class="note-text">${escapeHtml(data.text)}</p>
+        <span class="note-time">${timeStr}</span>
+      `;
+      note.addEventListener("click", () => openNoteModal(data.text, timeStr, color));
+
+      const firstNote = board.querySelector(".sticky-note");
+      if (firstNote) board.insertBefore(note, firstNote);
+      else board.appendChild(note);
+
+      note.classList.add("note-appear");
+    }
+
+    function openNoteModal(text, time, color) {
+      const modal = document.getElementById("note-modal");
+      const modalCard = document.getElementById("modal-card");
+      const modalText = document.getElementById("modal-text");
+      const modalTime = document.getElementById("modal-time");
+      if (!modal) return;
+      modalCard.style.background = color;
+      modalText.textContent = text;
+      modalTime.textContent = time;
+      modal.classList.add("open");
+    }
+
+    window.closeNoteModal = function() {
+      document.getElementById("note-modal").classList.remove("open");
+    };
+
+    function hashCode(str) {
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+      return h;
+    }
+
+    function escapeHtml(t) {
+      return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
+
+    window.submitNote = async function() {
+      const input = document.getElementById("note-input");
+      const text = input.value.trim();
+
+      if (!text) { showNoteMsg("Please write something first!", "error"); return; }
+      if (text.length > 160) { showNoteMsg("Keep it under 160 characters!", "error"); return; }
+      if (containsProfanity(text)) { showNoteMsg("Let's keep it kind — please rephrase that.", "error"); return; }
+
+      const submitBtn = document.getElementById("note-submit");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Posting…";
+
+      if (firebaseReady) {
+        try {
+          await addDoc(collection(db, "notes"), {
+            text,
+            timestamp: serverTimestamp()
+          });
+        } catch (error) {
+          console.error("Error creating document: ", error);
+          showNoteMsg("Error saving your suggestion. Please try again.", "error");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Post it!";
+          return;
+        }
+      } else {
+        renderNote({ text, timestamp: null }, "local-" + Date.now());
+      }
+
+      input.value = "";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Post it!";
+      
+      const counter = document.getElementById("char-counter");
+      if (counter) counter.textContent = "0/160";
+      
+      showNoteMsg("Your idea is up on the board! 📌", "success");
+    };
+
+    function showNoteMsg(text, type) {
+      const el = document.getElementById("note-msg");
+      if (!el) return;
+      el.textContent = text;
+      el.className = "note-feedback " + type;
+      setTimeout(() => { el.textContent = ""; el.className = "note-feedback"; }, 3000);
+    }
+
+    async function initNotes() {
+      if (!firebaseReady) return;
+      const q = query(collection(db, "notes"), orderBy("timestamp", "asc"));
+      onSnapshot(q, (snapshot) => {
+        if (snapshot.empty) {
+          const board = document.getElementById("notes-board");
+          if (board && !board.querySelector(".empty-board-msg")) {
+            board.innerHTML = `<p class="empty-board-msg">No ideas yet — be the first to share yours! 📌</p>`;
+          }
+        }
+        snapshot.docChanges().forEach(change => {
+          if (change.type === "added") renderNote(change.doc.data(), change.doc.id);
+        });
+      });
+    }
+
+    // ─── SPIN THE WHEEL ──────────────────────────────────────────
+    window.spinWheel = function() {
+      const btn = document.getElementById("spin-btn");
+      const canvas = document.getElementById("wheel-canvas");
+      const ctx = canvas.getContext("2d");
+      const result = document.getElementById("spin-result");
+
+      if (btn.dataset.spinning === "true") return;
+      btn.dataset.spinning = "true";
+      btn.textContent = "Spinning…";
+      result.className = "spin-result hidden";
+
+      const segments = 12;
+      const segAngle = (2 * Math.PI) / segments;
+      const COLORS = ["#C0392B","#E74C3C","#922B21","#E74C3C","#C0392B","#922B21","#E74C3C","#C0392B","#E74C3C","#922B21","#C0392B","#E74C3C"];
+      const LABELS = ["Try Again","Ooh Close!","Nope!","Almost…","Try Again","So Close!","Nope!","Try Again","Almost!","Nope!","Try Again","Close…"];
+
+      const won = Math.random() < 0.0001;
+
+      let startAngle = parseFloat(canvas.dataset.angle || "0");
+      const extraSpins = (5 + Math.random() * 3) * 2 * Math.PI;
+      let targetAngle;
+
+      if (won) {
+        targetAngle = startAngle + extraSpins + (Math.PI * 2 - (startAngle % (Math.PI * 2)));
+      } else {
+        const randomSegment = Math.floor(Math.random() * segments);
+        targetAngle = startAngle + extraSpins + (randomSegment * segAngle);
+      }
+
+      const duration = 4000;
+      const start = performance.now();
+
+      function ease(t) {
+        return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+      }
+
+      function drawWheel(angle) {
+        const cx = canvas.width / 2, cy = canvas.height / 2, r = cx - 10;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < segments; i++) {
+          const a0 = angle + i * segAngle, a1 = a0 + segAngle;
+          ctx.beginPath(); ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, r, a0, a1); ctx.closePath();
+          ctx.fillStyle = COLORS[i]; ctx.fill();
+          ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+          ctx.save(); ctx.translate(cx, cy); ctx.rotate(a0 + segAngle / 2);
+          ctx.textAlign = "right"; ctx.fillStyle = "#fff";
+          ctx.font = "bold 11px 'DM Sans', sans-serif";
+          ctx.fillText(LABELS[i], r - 10, 4);
+          ctx.restore();
+        }
+        ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI*2);
+        ctx.fillStyle = "#1a1a1a"; ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans'";
+        ctx.textAlign = "center"; ctx.fillText("SPIN", cx, cy + 5);
+        ctx.beginPath(); ctx.moveTo(cx + r + 8, cy);
+        ctx.lineTo(cx + r - 10, cy - 10);
+        ctx.lineTo(cx + r - 10, cy + 10);
+        ctx.closePath(); ctx.fillStyle = "#1a1a1a"; ctx.fill();
+      }
+
+      function animate(now) {
+        const elapsed = now - start;
+        const t = Math.min(elapsed / duration, 1);
+        const currentAngle = startAngle + (targetAngle - startAngle) * ease(t);
+        drawWheel(currentAngle);
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          canvas.dataset.angle = targetAngle;
+          btn.dataset.spinning = "false";
+          btn.textContent = "Spin Again!";
+          result.classList.remove("hidden");
+          if (won) {
+            result.className = "spin-result win";
+            result.innerHTML = "🎉 WINNER! You won a bag of Haribos! Show this screen to Doug!";
+          } else {
+            result.className = "spin-result loss";
+            const msgs = ["Better luck next time!","So close… not really.","The Haribos remain safe.","Doug keeps his sweets today.","Try your luck again!"];
+            result.textContent = msgs[Math.floor(Math.random() * msgs.length)];
+          }
+        }
+      }
+
+      drawWheel(startAngle);
+      requestAnimationFrame(animate);
+    };
+
+    function initWheel() {
+      const canvas = document.getElementById("wheel-canvas");
+      if (!canvas) return;
+      canvas.dataset.angle = "0";
+      const ctx = canvas.getContext("2d");
+      const segments = 12, segAngle = (2*Math.PI)/segments;
+      const COLORS = ["#C0392B","#E74C3C","#922B21","#E74C3C","#C0392B","#922B21","#E74C3C","#C0392B","#E74C3C","#922B21","#C0392B","#E74C3C"];
+      const LABELS = ["Try Again","Ooh Close!","Nope!","Almost…","Try Again","So Close!","Nope!","Try Again","Almost!","Nope!","Try Again","Close…"];
+      const cx = canvas.width/2, cy = canvas.height/2, r = cx - 10;
+      for (let i = 0; i < segments; i++) {
+        const a0 = i*segAngle, a1 = a0+segAngle;
+        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a0,a1); ctx.closePath();
+        ctx.fillStyle = COLORS[i]; ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.save(); ctx.translate(cx,cy); ctx.rotate(a0+segAngle/2);
+        ctx.textAlign = "right"; ctx.fillStyle = "#fff";
+        ctx.font = "bold 11px 'DM Sans', sans-serif"; ctx.fillText(LABELS[i], r-10, 4);
+        ctx.restore();
+      }
+      ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2);
+      ctx.fillStyle = "#1a1a1a"; ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans'";
+      ctx.textAlign = "center"; ctx.fillText("SPIN", cx, cy+5);
+      ctx.beginPath(); ctx.moveTo(cx+r+8,cy); ctx.lineTo(cx+r-10,cy-10); ctx.lineTo(cx+r-10,cy+10);
+      ctx.closePath(); ctx.fillStyle = "#1a1a1a"; ctx.fill();
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", () => {
+      initVoteCounter();
+      initNotes();
+      initWheel();
+
+      const nav = document.getElementById("nav");
+      window.addEventListener("scroll", () => {
+        nav.classList.toggle("scrolled", window.scrollY > 60);
+      });
+
+      const reveals = document.querySelectorAll(".reveal");
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); observer.unobserve(e.target); } });
+      }, { threshold: 0.1 });
+      reveals.forEach(el => observer.observe(el));
+
+      const noteInput = document.getElementById("note-input");
+      const counter = document.getElementById("char-counter");
+      if (noteInput && counter) {
+        noteInput.addEventListener("input", () => {
+          const len = noteInput.value.length;
+          counter.textContent = len + "/160";
+          counter.style.color = len > 140 ? "#c0392b" : "#888";
+        });
+        noteInput.addEventListener("keydown", e => {
+          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); window.submitNote(); }
+        });
+      }
+
+      document.getElementById("note-modal")?.addEventListener("click", (e) => {
+        if (e.target.id === "note-modal") window.closeNoteModal();
+      });
+    });
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red-deep:    #7B0D0D;
+      --red-dark:    #A31515;
+      --red-mid:     #C0392B;
+      --red-bright:  #E74C3C;
+      --red-light:   #FADBD8;
+      --red-pale:    #FEF5F5;
+      --cream:       #FDFAF8;
+      --charcoal:    #1C1C1E;
+      --ink:         #2C2C2E;
+      --muted:       #6E6E73;
+      --border:      #E5E0DC;
+      --white:       #FFFFFF;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--charcoal);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAVIGATION ─────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 20px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+    #nav.scrolled {
+      background: rgba(253,250,248,0.92);
+      backdrop-filter: blur(20px);
+      padding: 14px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px; letter-spacing: 2px;
+      color: var(--red-mid);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-size: 14px; font-weight: 500; color: var(--ink);
+      text-decoration: none; letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--red-mid); }
+
+    /* ── HERO ───────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(192,57,43,0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 90% 80%, rgba(231,76,60,0.06) 0%, transparent 60%);
+    }
+    .hero-eyebrow {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red-mid); margin-bottom: 24px;
+      position: relative; z-index: 1;
+    }
+    .hero-eyebrow span {
+      display: inline-block;
+      background: var(--red-pale); border: 1px solid var(--red-light);
+      padding: 6px 16px; border-radius: 999px;
+    }
+    .hero-headline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(64px, 10vw, 120px);
+      font-weight: 900;
+      line-height: 0.95;
+      color: var(--charcoal);
+      position: relative; z-index: 1;
+      margin-bottom: 8px;
+    }
+    .hero-headline .accent {
+      color: var(--red-mid);
+      font-style: italic;
+    }
+    .hero-sub {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(28px, 4vw, 52px);
+      letter-spacing: 4px;
+      color: var(--muted);
+      position: relative; z-index: 1;
+      margin-bottom: 32px;
+    }
+    .hero-desc {
+      max-width: 540px;
+      font-size: 18px; line-height: 1.7; font-weight: 300;
+      color: var(--ink); position: relative; z-index: 1;
+      margin-bottom: 48px;
+    }
+    .hero-desc strong { font-weight: 600; color: var(--red-dark); }
+    .hero-cta {
+      display: inline-flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1;
+    }
+    .btn-primary {
+      background: var(--red-mid); color: #fff;
+      border: none; border-radius: 999px;
+      padding: 16px 36px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; letter-spacing: 0.01em;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(192,57,43,0.3); }
+    .btn-secondary {
+      background: transparent; color: var(--charcoal);
+      border: 1.5px solid var(--border); border-radius: 999px;
+      padding: 16px 36px; font-size: 16px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-secondary:hover { border-color: var(--red-mid); color: var(--red-mid); }
+
+    .hero-scroll-hint {
+      position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+      z-index: 1; animation: bounce 2s infinite;
+    }
+    .scroll-line {
+      width: 1px; height: 40px; background: linear-gradient(to bottom, var(--red-mid), transparent);
+    }
+    @keyframes bounce { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(8px)} }
+
+    /* ── SECTION BASE ───────────────────────────────────────── */
+    section { padding: 100px 24px; }
+    .section-inner { max-width: 1000px; margin: 0 auto; }
+    .section-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red-mid); margin-bottom: 16px; display: block;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 700; line-height: 1.1;
+      color: var(--charcoal); margin-bottom: 24px;
+    }
+    .section-title .pop {
+      font-style: italic; color: var(--red-mid);
+    }
+    .section-body {
+      font-size: 17px; line-height: 1.8; font-weight: 300; color: var(--muted);
+      max-width: 620px; margin-bottom: 56px;
+    }
+
+    /* ── REVEAL ANIMATIONS ──────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* ── MANIFESTO ──────────────────────────────────────────── */
+    #manifesto { background: var(--white); }
+    .manifesto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2px; border: 2px solid var(--charcoal); border-radius: 20px;
+      overflow: hidden; background: var(--charcoal);
+    }
+    .manifesto-card {
+      background: var(--white); padding: 44px 36px;
+      transition: background 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .manifesto-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: var(--red-mid); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .manifesto-card:hover::before { transform: scaleX(1); }
+    .manifesto-card:hover { background: var(--red-pale); }
+    .manifesto-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 72px; line-height: 1;
+      color: var(--red-light); margin-bottom: 12px;
+      display: block;
+    }
+    .manifesto-card:hover .manifesto-num { color: var(--red-bright); }
+    .manifesto-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--charcoal); margin-bottom: 12px; line-height: 1.2;
+    }
+    .manifesto-text {
+      font-size: 15px; line-height: 1.7; font-weight: 300; color: var(--muted);
+    }
+
+    /* ── VOTE SECTION ───────────────────────────────────────── */
+    #vote { background: var(--charcoal); }
+    #vote .section-title { color: var(--white); }
+    #vote .section-body { color: rgba(255,255,255,0.5); }
+    #vote .section-label { color: var(--red-bright); }
+    .vote-counter-wrap {
+      display: flex; align-items: center; gap: 40px; flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .vote-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 120px; line-height: 1;
+      color: var(--red-bright);
+      transition: transform 0.15s;
+    }
+    .vote-number.pop { transform: scale(1.15); }
+    .vote-label-stack { display: flex; flex-direction: column; gap: 4px; }
+    .vote-label-big {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700; color: var(--white);
+    }
+    .vote-label-small { font-size: 14px; color: rgba(255,255,255,0.4); }
+    #vote-btn {
+      display: inline-block;
+      background: var(--red-mid); color: #fff;
+      border: none; border-radius: 999px;
+      padding: 20px 48px; font-size: 18px; font-weight: 600;
+      cursor: pointer; transition: all 0.25s; letter-spacing: 0.01em;
+      position: relative; overflow: hidden;
+    }
+    #vote-btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0.1);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s;
+    }
+    #vote-btn:hover::after { transform: scaleX(1); }
+    #vote-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(231,76,60,0.4); }
+    #vote-btn.voted { background: #27AE60; cursor: default; }
+    #vote-btn:disabled { opacity: 0.7; cursor: default; transform: none; }
+    .vote-msg {
+      font-size: 15px; margin-top: 16px; font-weight: 500;
+      transition: opacity 0.5s; opacity: 0;
+    }
+    .vote-msg.success { color: #2ECC71; }
+    .vote-msg.already { color: rgba(255,255,255,0.5); }
+
+    /* ── STICKY NOTES ───────────────────────────────────────── */
+    #ideas { background: var(--cream); }
+    .note-input-area {
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 28px;
+      margin-bottom: 48px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+    }
+    .note-input-area textarea {
+      width: 100%; min-height: 90px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px; line-height: 1.6; font-weight: 300;
+      border: none; outline: none; resize: none;
+      color: var(--charcoal); background: transparent;
+    }
+    .note-input-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    #char-counter { font-size: 13px; color: #aaa; font-family: 'Space Mono', monospace; }
+    #note-submit {
+      background: var(--charcoal); color: var(--white);
+      border: none; border-radius: 999px;
+      padding: 12px 28px; font-size: 15px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    #note-submit:hover { background: var(--red-mid); }
+    #note-submit:disabled { opacity: 0.5; cursor: default; }
+    .note-feedback { font-size: 14px; min-height: 20px; margin-top: 8px; }
+    .note-feedback.error { color: var(--red-mid); }
+    .note-feedback.success { color: #27AE60; }
+
+    #notes-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 24px;
+    }
+    .sticky-note {
+      padding: 20px; border-radius: 4px;
+      font-family: 'DM Sans', sans-serif;
+      box-shadow: 3px 3px 12px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+      cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      min-height: 120px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .sticky-note:hover { transform: scale(1.04) rotate(0deg) !important; box-shadow: 6px 6px 24px rgba(0,0,0,0.15); }
+    .note-text { font-size: 14px; line-height: 1.5; color: #333; word-break: break-word; }
+    .note-time { font-size: 11px; color: #999; margin-top: 12px; font-family: 'Space Mono', monospace; }
+    @keyframes noteAppear { from { opacity:0; transform:scale(0.8) rotate(-3deg); } to { opacity:1; } }
+    .note-appear { animation: noteAppear 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+    .empty-board-msg {
+      grid-column: 1/-1; text-align: center; padding: 60px;
+      color: var(--muted); font-size: 16px; font-style: italic;
+    }
+
+    /* ── NOTE MODAL ─────────────────────────────────────────── */
+    #note-modal {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+      backdrop-filter: blur(4px);
+    }
+    #note-modal.open { opacity: 1; pointer-events: all; }
+    #modal-card {
+      max-width: 400px; width: 90%;
+      border-radius: 8px; padding: 36px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+      transform: scale(0.9);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      position: relative;
+    }
+    #note-modal.open #modal-card { transform: scale(1); }
+    #modal-text { font-size: 18px; line-height: 1.6; color: #333; margin-bottom: 20px; }
+    #modal-time { font-size: 12px; color: #999; font-family: 'Space Mono', monospace; }
+    .modal-close {
+      position: absolute; top: 12px; right: 16px;
+      background: none; border: none; font-size: 22px;
+      cursor: pointer; color: #999; line-height: 1;
+    }
+    .modal-close:hover { color: #333; }
+
+    /* ── SPIN WHEEL ─────────────────────────────────────────── */
+    #spin { background: var(--white); }
+    .spin-layout {
+      display: flex; align-items: center; gap: 64px; flex-wrap: wrap;
+    }
+    .spin-left { flex: 1; min-width: 260px; }
+    .spin-right { flex: 0 0 auto; }
+    #wheel-canvas {
+      border-radius: 50%;
+      box-shadow: 0 8px 40px rgba(192,57,43,0.2);
+      display: block;
+    }
+    #spin-btn {
+      margin-top: 20px; width: 100%;
+      background: var(--red-mid); color: #fff;
+      border: none; border-radius: 999px;
+      padding: 16px 32px; font-size: 16px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    #spin-btn:hover { background: var(--red-dark); transform: translateY(-2px); }
+    .spin-odds {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px; color: var(--muted);
+      margin-top: 12px; text-align: center;
+    }
+    .spin-result {
+      margin-top: 24px; padding: 16px 24px;
+      border-radius: 12px; font-size: 16px; font-weight: 600;
+      text-align: center;
+    }
+    .spin-result.hidden { display: none; }
+    .spin-result.win { background: #EAFAF1; color: #1E8449; border: 1.5px solid #A9DFBF; }
+    .spin-result.loss { background: var(--red-pale); color: var(--red-dark); border: 1.5px solid var(--red-light); }
+
+    /* ── FOOTER ─────────────────────────────────────────────── */
+    footer {
+      background: var(--charcoal); color: rgba(255,255,255,0.4);
+      text-align: center; padding: 40px 24px;
+      font-size: 13px; letter-spacing: 0.02em;
+    }
+    footer strong { color: rgba(255,255,255,0.8); }
+    footer .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px; letter-spacing: 3px;
+      color: var(--red-bright); display: block; margin-bottom: 12px;
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────────────── */
+    .divider {
+      width: 60px; height: 4px;
+      background: var(--red-mid); border-radius: 2px;
+      margin: 0 0 48px;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 680px) {
+      #nav { padding: 16px 20px; }
+      #nav.scrolled { padding: 12px 20px; }
+      .nav-links { display: none; }
+      section { padding: 72px 20px; }
+      .vote-number { font-size: 80px; }
+      #wheel-canvas { width: 260px !important; height: 260px !important; }
+      .spin-layout { flex-direction: column-reverse; }
+      .spin-right { align-self: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav id="nav">
+    <a href="#hero" class="nav-logo">Vote4Doug</a>
+    <ul class="nav-links">
+      <li><a href="#manifesto">Manifesto</a></li>
+      <li><a href="#vote">Vote</a></li>
+      <li><a href="#ideas">Ideas</a></li>
+      <li><a href="#spin">Spin</a></li>
+    </ul>
+  </nav>
+
+  <section id="hero">
+    <div class="hero-bg"></div>
+    <p class="hero-eyebrow"><span>The Suthers School · Year 10 Head Student 2026</span></p>
+    <h1 class="hero-headline">
+      Vote<br/><span class="accent">Doug.</span>
+    </h1>
+    <p class="hero-sub">Head Student</p>
+    <p class="hero-desc">
+      A <strong>genuine voice</strong> for every student at The Suthers. Not just promises —
+      real change, real honesty, and a community that moves forward together.
+    </p>
+    <div class="hero-cta">
+      <a href="#vote" class="btn-primary">Cast My Vote →</a>
+      <a href="#manifesto" class="btn-secondary">Read the Manifesto</a>
+    </div>
+    <div class="hero-scroll-hint">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <section id="manifesto">
+    <div class="section-inner">
+      <span class="section-label reveal">The Plan</span>
+      <h2 class="section-title reveal">What Doug<br/><span class="pop">stands for.</span></h2>
+      <p class="section-body reveal">
+        Three pillars. No fluff. Just real commitments to the community
+        that makes The Suthers what it is.
+      </p>
+      <div class="manifesto-grid">
+        <div class="manifesto-card reveal reveal-delay-1">
+          <span class="manifesto-num">01</span>
+          <h3 class="manifesto-heading">An Honest, Open Environment</h3>
+          <p class="manifesto-text">
+            Transparency at every level. If decisions are being made that affect you, 
+            you deserve to know about them. Doug will champion an open-door approach 
+            between students and staff — no hidden agendas, no empty words.
+          </p>
+        </div>
+        <div class="manifesto-card reveal reveal-delay-2">
+          <span class="manifesto-num">02</span>
+          <h3 class="manifesto-heading">Uniting Our Community</h3>
+          <p class="manifesto-text">
+            One step at a time, every voice matters. Year groups, tutor groups, 
+            different interests — Doug believes our differences are our strength. 
+            Together, The Suthers is unstoppable.
+          </p>
+        </div>
+        <div class="manifesto-card reveal reveal-delay-3">
+          <span class="manifesto-num">03</span>
+          <h3 class="manifesto-heading">Enrichment is the Ethos</h3>
+          <p class="manifesto-text">
+            School should be more than exams. Doug will push for richer experiences — 
+            better events, more opportunities, and a school life that genuinely 
+            prepares you for the world beyond the classroom.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="manifesto">
+    <div class="section-inner">
+      <span class="section-label reveal">Stay in the loop</span>
+      <h2 class="section-title reveal">Ahh yes...<br/><span class="pop">Brainrot at it's finest</span></h2>
+      <p class="section-body reveal">
+         Watch Doug's excellently crafted social media campaign by clicking the links below. Don't miss out on the memes, the updates, and the occasional cat picture.
+      </p>
+      <div class="manifesto-grid">
+        <div class="manifesto-card reveal reveal-delay-1">
+          <span class="manifesto-num">Instagram</span>
+          <h3 class="manifesto-heading">A masterclass of marketing</h3>
+          <p class="manifesto-text">
+            Watch Doug's excellently crafted social media campaign by clicking this box, if you can do that then you can vote for me...
+        </div>
+        
+    </div>
+  </section>
+
+  <section id="vote">
+    <div class="section-inner">
+      <span class="section-label reveal">Live Count</span>
+      <h2 class="section-title reveal">Pledge Your<br/><span style="color:var(--red-bright);font-style:italic;">Vote.</span></h2>
+      <p class="section-body reveal">Real pledges, from real students. Every click updates for everyone — live.</p>
+      <div class="vote-counter-wrap reveal">
+        <span id="vote-count" class="vote-number">—</span>
+        <div class="vote-label-stack">
+          <span class="vote-label-big">Students<br/>voting Doug</span>
+          <span class="vote-label-small">updated in real time</span>
+        </div>
+      </div>
+      <button id="vote-btn" class="reveal" onclick="castVote()">
+        🗳️ &nbsp;I'm voting for Doug
+      </button>
+      <p id="vote-message" class="vote-msg"></p>
+    </div>
+  </section>
+
+  <section id="ideas">
+    <div class="section-inner">
+      <span class="section-label reveal">Community Board</span>
+      <h2 class="section-title reveal">Your Ideas,<br/><span class="pop">Your School.</span></h2>
+      <p class="section-body reveal">
+        Drop a suggestion below. What would make The Suthers better?
+        All notes appear on the board for everyone to see, but don't worry they won't see who you are...
+      </p>
+      <div class="note-input-area reveal">
+        <textarea
+          id="note-input"
+          placeholder="What one thing would make The Suthers better? (anonymous, max 160 chars)"
+          maxlength="160"
+        ></textarea>
+        <div class="note-input-footer">
+          <span id="char-counter">0/160</span>
+          <button id="note-submit" onclick="submitNote()">Post it!</button>
+        </div>
+        <p id="note-msg" class="note-feedback"></p>
+      </div>
+
+      <div id="notes-board">
+        <p class="empty-board-msg">
+          No ideas yet — be the first to share yours! 📌
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="spin">
+    <div class="section-inner">
+      <span class="section-label reveal">A Little Fun</span>
+      <h2 class="section-title reveal">Spin to<br/><span class="pop">Win.</span></h2>
+      <div class="spin-layout">
+        <div class="spin-left reveal">
+          <p style="font-size:17px;line-height:1.8;color:var(--muted);font-weight:300;margin-bottom:28px;">
+            Think you're lucky? Give the wheel a spin.
+            There's a <strong style="color:var(--red-mid);font-weight:700;">1-in-10,000</strong> chance 
+            of winning a real bag of Haribos, personally delivered by Doug himself.
+          </p>
+          <p style="font-size:14px;color:var(--muted);font-weight:300;font-style:italic;">
+            The odds are intentionally brutal — but someone has to win eventually…
+          </p>
+          <div id="spin-result" class="spin-result hidden"></div>
+        </div>
+        <div class="spin-right reveal reveal-delay-2">
+          <canvas id="wheel-canvas" width="300" height="300"></canvas>
+          <button id="spin-btn" onclick="spinWheel()">Spin the Wheel!</button>
+          <p class="spin-odds">Odds: 1 in 10,000 · Prize: Haribos</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-logo">Vote4Doug</span>
+    <p>Head Student Campaign · <strong>The Suthers School</strong>
+    <p style="margin-top:8px;">Honest. Open. Together. · <em>vote4doug.uk</em></p>
+  </footer>
+
+  <div id="note-modal">
+    <div id="modal-card">
+      <button class="modal-close" onclick="closeNoteModal()">✕</button>
+      <p id="modal-text"></p>
+      <span id="modal-time"></span>
+    </div>
+  </div>
+
+</body>
+</html>
