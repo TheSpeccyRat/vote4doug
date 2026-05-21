@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vote4Doug — Head Student 2026</title>
+  <title>Vote4Doug</title>
   <meta name="description" content="Vote for Doug as Head Student at The Suthers School. Building an honest, open community." />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,7 +14,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // 🔥 Your live Firebase configuration seamlessly integrated
+   
     const firebaseConfig = {
       apiKey: "AIzaSyA5YgUasOCJbmGIy_HlmfN2E_mokvs1wyM",
       authDomain: "vote4doug-f82ab.firebaseapp.com",
@@ -30,7 +30,7 @@
 
     try {
       const app = initializeApp(firebaseConfig);
-      db = getFirestore(app); // Connects the layout directly to your database
+      db = getFirestore(app); 
       firebaseReady = true;
     } catch(e) {
       console.warn("Firebase failed to initialize. Running in local fallback/demo mode.", e);
@@ -567,7 +567,7 @@
     #manifesto { background: var(--white); }
     .manifesto-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 2px; border: 2px solid var(--charcoal); border-radius: 20px;
       overflow: hidden; background: var(--charcoal);
     }
@@ -809,6 +809,7 @@
       <li><a href="#vote">Vote</a></li>
       <li><a href="#ideas">Ideas</a></li>
       <li><a href="#spin">Spin</a></li>
+      <li><a href="#socials">Socials</a></li>
     </ul>
   </nav>
 
@@ -836,61 +837,50 @@
   <section id="manifesto">
     <div class="section-inner">
       <span class="section-label reveal">The Plan</span>
-      <h2 class="section-title reveal">What Doug<br/><span class="pop">stands for.</span></h2>
+      <h2 class="section-title reveal">What Doug<br/><span class="pop">stands fo(u)r.</span></h2>
       <p class="section-body reveal">
-        Three pillars. No fluff. Just real commitments to the community
+        4 Letters 4 Principles. No fluff. Just real commitments to the community
         that makes The Suthers what it is.
       </p>
       <div class="manifesto-grid">
         <div class="manifesto-card reveal reveal-delay-1">
-          <span class="manifesto-num">01</span>
-          <h3 class="manifesto-heading">An Honest, Open Environment</h3>
+          <span class="manifesto-num">D</span>
+          <h3 class="manifesto-heading">Dedication</h3>
           <p class="manifesto-text">
-            Transparency at every level. If decisions are being made that affect you, 
-            you deserve to know about them. Doug will champion an open-door approach 
-            between students and staff — no hidden agendas, no empty words.
+            Doug is in this for the long haul. He’s not about quick wins or empty 
+            promises — he’s committed to making a real difference, and he’s ready 
+            to put in the work to get it done.
           </p>
         </div>
         <div class="manifesto-card reveal reveal-delay-2">
-          <span class="manifesto-num">02</span>
-          <h3 class="manifesto-heading">Uniting Our Community</h3>
+          <span class="manifesto-num">O</span>
+          <h3 class="manifesto-heading">Optimism</h3>
           <p class="manifesto-text">
-            One step at a time, every voice matters. Year groups, tutor groups, 
-            different interests — Doug believes our differences are our strength. 
-            Together, The Suthers is unstoppable.
+            Doug beieves in the power of positivity. He is all about creating a school environment where everyone is supported, nurtured and feels empowered to achieve.
           </p>
         </div>
         <div class="manifesto-card reveal reveal-delay-3">
-          <span class="manifesto-num">03</span>
-          <h3 class="manifesto-heading">Enrichment is the Ethos</h3>
+          <span class="manifesto-num">U</span>
+          <h3 class="manifesto-heading">Unity</h3>
           <p class="manifesto-text">
-            School should be more than exams. Doug will push for richer experiences — 
-            better events, more opportunities, and a school life that genuinely 
-            prepares you for the world beyond the classroom.
+            Doug is all about bringing people together. He wants to foster a sense of community and belonging, where every student feels like they have a place and a voice. We are Suthers students after all.
           </p>
         </div>
+
+         <div class="manifesto-card reveal reveal-delay-4">
+          <span class="manifesto-num">G</span>
+          <h3 class="manifesto-heading">Growth</h3>
+          <p class="manifesto-text">
+            Greatness stems from growth, why settle for good when we can be great? Doug is committed to pushing the boundaries and striving for excellence in everything we do, from academics to extracurriculars and beyond. But can only happen with your vote...
+          </p>
+        </div>
+
+        
       </div>
     </div>
   </section>
 
-  <section id="manifesto">
-    <div class="section-inner">
-      <span class="section-label reveal">Stay in the loop</span>
-      <h2 class="section-title reveal">Ahh yes...<br/><span class="pop">Brainrot at it's finest</span></h2>
-      <p class="section-body reveal">
-         Watch Doug's excellently crafted social media campaign by clicking the links below. Don't miss out on the memes, the updates, and the occasional cat picture.
-      </p>
-      <div class="manifesto-grid">
-        <div class="manifesto-card reveal reveal-delay-1">
-          <span class="manifesto-num">Instagram</span>
-          <h3 class="manifesto-heading">A masterclass of marketing</h3>
-          <p class="manifesto-text">
-            Watch Doug's excellently crafted social media campaign by clicking this box, if you can do that then you can vote for me...
-        </div>
-        
-    </div>
-  </section>
-
+  
   <section id="vote">
     <div class="section-inner">
       <span class="section-label reveal">Live Count</span>
@@ -909,6 +899,8 @@
       <p id="vote-message" class="vote-msg"></p>
     </div>
   </section>
+
+  
 
   <section id="ideas">
     <div class="section-inner">
@@ -963,6 +955,25 @@
       </div>
     </div>
   </section>
+
+  <section id="socials">
+    <div class="section-inner">
+      <span class="section-label reveal">Stay in the loop</span>
+      <h2 class="section-title reveal">Ahh yes...<br/><span class="pop">Brainrot at it's finest</span></h2>
+      <p class="section-body reveal">
+         Watch Doug's excellently crafted social media campaign by clicking the links below. Don't miss out on the memes, the updates, and the occasional cat picture.
+      </p>
+      <div class="manifesto-grid">
+        <div class="manifesto-card reveal reveal-delay-1">
+          <span class="manifesto-num">Instagram</span>
+          <h3 class="manifesto-heading">A masterclass of marketing</h3>
+          <p class="manifesto-text">
+            Watch Doug's excellently crafted social media campaign by clicking this box, if you can do that then you can vote for me...
+        </div>
+        
+    </div>
+  </section>
+
 
   <footer>
     <span class="footer-logo">Vote4Doug</span>
