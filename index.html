@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vote4Doug</title>
-  <meta name="description" content="Vote for Doug as Head Student at The Suthers School. Building an honest, open community." />
+  <meta name="description" content="Vote for Doug as Head Student of The Suthers School. Building an honest, open community." />
 
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=1">
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -109,7 +109,7 @@
     }
 
     // ─── STICKY NOTES ────────────────────────────────────────────
-    const BAD_WORDS = ["fuck","shit","cunt","bitch","bastard","arse","arsehole","asshole","ass","damn","bollocks","wanker","twat","dick","prick","cock","piss","crap","whore","slut","nigger","faggot","retard","spastic","idiot","moron","stupid","hate","kill","die","dead","ugly","fat","loser","goon","gooning","douche","douchebag","cum","pussy","fucker","motherfucker","nigga",];
+    const BAD_WORDS = ["fuck","shit","cunt","bitch","bastard","arse","arsehole","asshole","ass","damn","bollocks","wanker","twat","dick","prick","cock","piss","crap","whore","slut","nigger","faggot","retard","spastic","idiot","moron","stupid","hate","kill","die","dead","ugly","fat","loser","goon","gooning","douche","douchebag","cum","pussy","fucker","motherfucker","nigga", "fire", "sack", "salary",];
 
     function containsProfanity(text) {
       const lower = text.toLowerCase().replace(/[^a-z\s]/gi,"");
@@ -815,7 +815,7 @@
 
   <section id="hero">
     <div class="hero-bg"></div>
-    <p class="hero-eyebrow"><span>The Suthers School ·Head Student 2026-27</span></p>
+    <p class="hero-eyebrow"><span>Head Student 2026-27</span></p>
     <h1 class="hero-headline">
       Vote<br/><span class="accent">Doug.</span>
     </h1>
@@ -873,7 +873,7 @@
           <span class="manifesto-num">G</span>
           <h3 class="manifesto-heading">Growth</h3>
           <p class="manifesto-text">
-            Greatness stems from growth, why settle for good when we can be great? Doug is committed to pushing the boundaries and striving for excellence in everything we do, from academics to extracurriculars and beyond. But can only happen with your vote...
+            Greatness stems from growth, why settle for good when we can be great? Doug is committed to pushing the boundaries and striving for excellence in everything we do, from academics to extracurriculars and beyond. But that can only happen with your vote...
           </p>
         </div>
 
@@ -887,16 +887,15 @@
     <div class="section-inner">
       <span class="section-label reveal">Live Count</span>
       <h2 class="section-title reveal">Pledge Your<br/><span style="color:var(--red-bright);font-style:italic;">Vote.</span></h2>
-      <p class="section-body reveal">Real pledges, from real students. Every click updates for everyone — live.</p>
+      <p class="section-body reveal">Real pledges, from real students. Every click updating — live.</p>
       <div class="vote-counter-wrap reveal">
         <span id="vote-count" class="vote-number">—</span>
         <div class="vote-label-stack">
           <span class="vote-label-big">Students<br/>voting Doug</span>
-          <span class="vote-label-small">updated in real time</span>
         </div>
       </div>
       <button id="vote-btn" class="reveal" onclick="castVote()">
-        🗳️ &nbsp;I'm voting for Doug
+        I'm voting for Doug
       </button>
       <p id="vote-message" class="vote-msg"></p>
     </div>
@@ -941,18 +940,18 @@
         <div class="spin-left reveal">
           <p style="font-size:17px;line-height:1.8;color:var(--muted);font-weight:300;margin-bottom:28px;">
             Think you're lucky? Give the wheel a spin.
-            There's a <strong style="color:var(--red-mid);font-weight:700;">1-in-10,000</strong> chance 
+            There's a <strong style="color:var(--red-mid);font-weight:700;">1-in-Never</strong> chance 
             of winning a real bag of Haribos, personally delivered by Doug himself.
           </p>
           <p style="font-size:14px;color:var(--muted);font-weight:300;font-style:italic;">
-            The odds are intentionally brutal — but someone has to win eventually…
+            The odds are intentionally brutal
           </p>
           <div id="spin-result" class="spin-result hidden"></div>
         </div>
         <div class="spin-right reveal reveal-delay-2">
           <canvas id="wheel-canvas" width="300" height="300"></canvas>
           <button id="spin-btn" onclick="spinWheel()">Spin the Wheel!</button>
-          <p class="spin-odds">Odds: 1 in 10,000 · Prize: Haribos</p>
+          <p class="spin-odds">Odds: 1 in never · Prize: Haribos</p>
         </div>
       </div>
     </div>
@@ -965,7 +964,7 @@
     <span class="footer-logo">Vote4Doug</span>
     <p>Head Student Campaign · <strong>The Suthers School</strong>
     <p style="margin-top:8px;">Honest. Open. Together. · <em>vote4doug.uk</em> </p>
-    <p>Built by Smyth-Ai Team℗</p>
+    <p><strong>Built by the Smyth-Ai Team℗</strong></p>
   </footer>
 
   <div id="note-modal">
