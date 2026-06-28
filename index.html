@@ -111,12 +111,180 @@
     // ─── STICKY NOTES ────────────────────────────────────────────
     const BAD_WORDS = ["fuck","shit","cunt","bitch","bastard","arse","arsehole","asshole","ass","damn","bollocks","wanker","twat","dick","prick","cock","piss","crap","whore","slut","nigger","faggot","retard","spastic","idiot","moron","stupid","hate","kill","die","dead","ugly","fat","loser","goon","gooning","douche","douchebag","cum","pussy","fucker","motherfucker","nigga", "fire", "sack", "salary",];
 
+    // ─── SURNAME BLOCKLIST ────────────────────────────────────────
+  
+    const BLOCKED_SURNAMES = [
+
+      // ── SLT / Senior Leadership ────────────────────────────────
+      "watkin",           // Ms N Watkin        – Head Teacher
+      "griffiths",        // Mr J Griffiths     – Deputy Head Teacher
+      "buckberry",        // Mr S Buckberry     – Assistant Head Teacher / SENDCo
+      "catlin",           // Mrs J Catlin       – Business and Operations Manager
+      "hunt",             // Mr P Hunt          – Assistant Head Teacher
+      "lynas",            // Mr D Lynas         – Senior Assistant Head Teacher
+
+      // ── School Leaders ────────────────────────────────────────
+      "allen",            // Miss Z Allen       – Associate School Leader / History
+      "brown",            // Mrs E Brown        – Associate School Leader / English
+      "hall",             // Miss A Hall        – Associate School Leader / Head of PE
+      "redmond",          // Mrs W Redmond      – Associate School Leader / DSL Year 11
+      "smith",            // Mr R Smith         – Associate School Leader / Head of DT
+
+      // ── Teaching Staff ────────────────────────────────────────
+      "adams",            // Mrs E Adams        – Head of Civics
+      "alexander",        // Mrs E Alexander-Grocott – Head of MFL (each part blocked)
+      "alexandergrocott", // (hyphen-stripped form)
+      "grocott",          // (second part)
+      "anderson",         // Mrs M Anderson     – Teacher of English
+      "barnard",          // Mr J Barnard       – Teacher of Science
+      "berrington",       // Miss G Berrington  – Teacher of PE
+      "brady",            // Mrs C Brady        – Cover Supervisor
+      "brinded",          // Mrs V Brinded      – Teacher of MFL
+      "carter",           // Miss C Carter      – Teacher of Science
+      "case",             // Mr A Case          – Head of Music & Performing Arts
+      "chewings",         // Mrs S Chewings     – Teacher of Science
+      "cox",              // Miss E Cox         – Head of English
+      "dixon",            // Mrs K Dixon        – Teacher of English
+      "dodman",           // Miss E Dodman      – Teacher of Science
+      "flower",           // Mrs J Flower       – Teacher of Art
+      "gardin",           // Mrs B Gardin       – Teacher of English
+      "goffe",            // Mr D Goffe         – Lead Teacher of Food
+      "hargreaves",       // Mr A Hargreaves    – Teacher of English
+      "higgswinn",        // Mrs E Higgs-Winn   – Head of Science (hyphen-stripped)
+      "higgs",            // (first part)
+      "winn",             // (second part)
+      "humber",           // Miss R Humber      – Teacher of Geography
+      "jones",            // Miss C Jones       – Teacher of Maths & PE
+      "kennedy",          // Mr R Kennedy       – Head of Geography
+      "lamb",             // Mr R Lamb          – Teacher of Maths
+      "leach",            // Mrs C Leach        – Head of Art
+      "lee",              // Mrs B Lee          – Head of History
+      "leggett",          // Mr M Leggett       – Cover Manager / Teacher of Maths
+      "lillicrap",        // Miss M Lillicrap   – Teacher of Maths
+      "manning",          // Mrs N Manning      – Cover Supervisor
+      "parkin",           // Mrs H Parkin       – Teacher of Drama
+      "sharpe",           // Miss A Sharpe & Mr J Sharpe – English / PE
+      "shivas",           // Mr A Shivas        – Head of Personal Development
+      "smyth",            // Mr M Smyth         – Head of Business and Computing
+      "ubhi",             // Mr J Ubhi          – Head of Maths
+
+      // ── Teaching Assistants ───────────────────────────────────
+      "bentley",          // Miss K Bentley     – Assistant SENDCo
+      "fraser",           // Miss L Fraser      – Teaching Assistant
+      "laws",             // Miss H Laws        – Teaching Assistant
+      "morgan",           // Mr C Morgan        – Teaching Assistant
+      "waddington",       // Mrs L Waddington   – Teaching Assistant
+      "whitbread",        // Mrs C Whitbread    – Teaching Assistant
+
+      // ── Behaviour Coordinators ────────────────────────────────
+      "moon",             // Mr P Moon          – Pastoral Leader Year 10
+      "richards",         // Mr S Richards      – Behaviour & Standards Manager Year 8
+      "wheatcroft",       // Mrs A Wheatcroft   – Behaviour & Standards Manager Year 7
+      "woolley",          // Mr A Woolley       – Behaviour & Standards Lead Year 9
+
+      // ── Administrative Support ────────────────────────────────
+      "friend",           // Mrs N Friend       – Finance Officer
+      "gentry",           // Mrs V Gentry       – Attendance Officer
+      "liwoshko",         // Mrs A Liwoshko     – Librarian
+      "odonnell",         // Mrs J O'Donnell    – Receptionist (apostrophe-stripped)
+      "sutterby",         // Mrs K Sutterby     – Admin Assistant
+      "todd",             // Mrs C Todd         – Exams and Data Officer
+      "wallbank",         // Mrs L Wallbank     – PA to Head Teacher
+
+      // ── Student Services ──────────────────────────────────────
+      "luckhurst",        // Mrs J Luckhurst    – Admin Assistant
+
+      // ── Site Services ─────────────────────────────────────────
+      "beresford",        // Mrs K Beresford    – DT Technician
+      "collins",          // Mr M Collins       – IT Technician
+      "cullen",           // Mrs S Cullen       – Midday Supervisor
+      "ridyard",          // Mr M & Mr J Ridyard – Site Manager / Assistant
+      "wigginton",        // Miss P Wigginton   – Science Technician
+
+      // ── Common UK surnames (broad safeguard) ──────────────────
+      "williams","taylor","davies","evans","wilson","thomas","roberts",
+      "johnson","walker","wright","robinson","thompson","white","hughes","edwards","green",
+      "lewis","harris","clarke","patel","jackson","wood","turner","martin","cooper","hill",
+      "ward","morris","moore","clark","king","baker","harrison",
+      "james","scott","phillips","watson","davis","parker","price","bennett","young",
+      "kelly","simpson","marshall","shaw","richardson","cook","rogers","bailey",
+      "bell","murphy","brooks","ford","gray","riley","ryan","fletcher",
+      "pearson","black","moss","barker","webb","fisher","bowman","holt","russell",
+      "porter","stephens","jenkins","palmer","graham","fox","butler","booth","khan",
+      "suthers","rahman"
+    ];
+
     function containsProfanity(text) {
       const lower = text.toLowerCase().replace(/[^a-z\s]/gi,"");
       return BAD_WORDS.some(w => {
         const re = new RegExp(`\\b${w}\\b`,"i");
         return re.test(lower);
       });
+    }
+
+    function containsBlockedSurname(text) {
+      // Normalise: three passes —
+      //   1. stripped:      letters & spaces only (catches most names)
+      //   2. dehyphenated:  hyphens removed (catches Higgs-Winn, Alexander-Grocott)
+      //   3. deapostrophed: apostrophes removed (catches O'Donnell)
+      const lower         = text.toLowerCase();
+      const stripped      = lower.replace(/[^a-z\s]/g, "");
+      const dehyphenated  = lower.replace(/-/g, "").replace(/[^a-z\s]/g, "");
+      const deapostrophed = lower.replace(/'/g, "").replace(/[^a-z\s]/g, "");
+      return BLOCKED_SURNAMES.some(s => {
+        const re = new RegExp(`\\b${s}\\b`, "i");
+        return re.test(stripped) || re.test(dehyphenated) || re.test(deapostrophed);
+      });
+    }
+
+    // Words that suggest someone is trying to dodge identification
+    const EVASION_TERMS = [
+      "anonymous","anon","nobody","noone","no one","unknown","private","hidden","secret",
+      "na","n/a","none","nil","null","nope","no","yes","test","user","student","person",
+      "someone","anyone","everyone","whoever","whatever","idk","dunno","random","fake",
+      "notme","notelling","wontay","mystery","ghost","shadow","void","blank","empty",
+      "xxxxx","xxxxxx","aaaa","aaaaa","zzzz","zzzzz","qqqq","1234","abcd","asdf",
+      "me","myself","you","them","him","her","they","it","name","firstname","example","myname"
+    ];
+
+    function containsEvasion(text) {
+      const lower = text.trim().toLowerCase().replace(/[^a-z0-9\s]/gi,"");
+      return EVASION_TERMS.some(e => lower === e || lower.replace(/\s/g,"") === e.replace(/\s/g,""));
+    }
+
+    function isRepeatedChar(text) {
+      // Catches "aaaa", "bbbb", etc.
+      return /^(.)\1{2,}$/.test(text.trim());
+    }
+
+    function validateFirstName(name) {
+      const n = name ? name.trim() : "";
+      if (!n) return "Please enter your first name.";
+      if (n.length < 2) return "First name must be at least 2 characters.";
+      if (n.length > 30) return "First name is too long.";
+      if (!/^[a-zA-Z\-']+$/.test(n)) return "First name should only contain letters.";
+      if (isRepeatedChar(n)) return "Please enter your real first name.";
+      if (containsEvasion(n)) return "Please enter your real first name — no placeholders.";
+      if (containsBlockedSurname(n)) return "First name only please — no surnames.";
+      if (containsProfanity(n)) return "Please use your real first name.";
+      return null;
+    }
+
+    function validateYearGroup(year) {
+      if (!year) return "Please select your year group.";
+      const valid = ["7","8","9","10","11",];
+      if (!valid.includes(year)) return "Please select a valid year group.";
+      return null;
+    }
+
+    function validateTutorSet(tutor) {
+      const t = tutor ? tutor.trim() : "";
+      if (!t) return "Please enter your tutor set.";
+      if (t.length < 1 || t.length > 10) return "Tutor set should be 1–10 characters.";
+      if (!/^[a-zA-Z0-9\-\/]+$/.test(t)) return "Tutor set should only contain letters or numbers.";
+      if (containsEvasion(t)) return "Please enter your real tutor set — no placeholders.";
+      if (isRepeatedChar(t)) return "Please enter your real tutor set.";
+      return null;
     }
 
     const NOTE_COLORS = ["#fff0f0","#fff7f0","#fffbf0","#f0fff4","#f0f4ff","#fdf0ff"];
@@ -141,9 +309,12 @@
       note.style.cssText = `background:${color};transform:rotate(${rotate})`;
       note.innerHTML = `
         <p class="note-text">${escapeHtml(data.text)}</p>
-        <span class="note-time">${timeStr}</span>
+        <div class="note-footer">
+          <span class="note-author">— ${escapeHtml(data.name || "?")}${data.yearGroup ? `, Yr${escapeHtml(data.yearGroup)}` : ""}${data.tutorSet ? ` · ${escapeHtml(data.tutorSet)}` : ""}</span>
+          <span class="note-time">${timeStr}</span>
+        </div>
       `;
-      note.addEventListener("click", () => openNoteModal(data.text, timeStr, color));
+      note.addEventListener("click", () => openNoteModal(data.text, timeStr, color, data.name, data.yearGroup, data.tutorSet));
 
       const firstNote = board.querySelector(".sticky-note");
       if (firstNote) board.insertBefore(note, firstNote);
@@ -152,15 +323,22 @@
       note.classList.add("note-appear");
     }
 
-    function openNoteModal(text, time, color) {
+    function openNoteModal(text, time, color, name, yearGroup, tutorSet) {
       const modal = document.getElementById("note-modal");
       const modalCard = document.getElementById("modal-card");
       const modalText = document.getElementById("modal-text");
       const modalTime = document.getElementById("modal-time");
+      const modalAuthor = document.getElementById("modal-author");
       if (!modal) return;
       modalCard.style.background = color;
       modalText.textContent = text;
       modalTime.textContent = time;
+      if (modalAuthor) {
+        let identity = "— " + (name || "?");
+        if (yearGroup) identity += `, Year ${yearGroup}`;
+        if (tutorSet) identity += ` · ${tutorSet}`;
+        modalAuthor.textContent = identity;
+      }
       modal.classList.add("open");
     }
 
@@ -179,12 +357,29 @@
     }
 
     window.submitNote = async function() {
-      const input = document.getElementById("note-input");
-      const text = input.value.trim();
+      const nameInput    = document.getElementById("note-name");
+      const yearInput    = document.getElementById("note-year");
+      const tutorInput   = document.getElementById("note-tutor");
+      const input        = document.getElementById("note-input");
 
+      const name      = nameInput  ? nameInput.value.trim()  : "";
+      const yearGroup = yearInput  ? yearInput.value.trim()  : "";
+      const tutorSet  = tutorInput ? tutorInput.value.trim() : "";
+      const text      = input.value.trim();
+
+      // Validate identity fields
+      const nameError  = validateFirstName(name);
+      if (nameError)  { showNoteMsg(nameError,  "error"); nameInput  && nameInput.focus();  return; }
+      const yearError  = validateYearGroup(yearGroup);
+      if (yearError)  { showNoteMsg(yearError,  "error"); yearInput  && yearInput.focus();  return; }
+      const tutorError = validateTutorSet(tutorSet);
+      if (tutorError) { showNoteMsg(tutorError, "error"); tutorInput && tutorInput.focus(); return; }
+
+      // Validate message
       if (!text) { showNoteMsg("Please write something first!", "error"); return; }
       if (text.length > 160) { showNoteMsg("Keep it under 160 characters!", "error"); return; }
       if (containsProfanity(text)) { showNoteMsg("Let's keep it kind — please rephrase that.", "error"); return; }
+      if (containsBlockedSurname(text)) { showNoteMsg("Please don't include people's surnames in your post.", "error"); return; }
 
       const submitBtn = document.getElementById("note-submit");
       submitBtn.disabled = true;
@@ -194,6 +389,9 @@
         try {
           await addDoc(collection(db, "notes"), {
             text,
+            name,
+            yearGroup,
+            tutorSet,
             timestamp: serverTimestamp()
           });
         } catch (error) {
@@ -204,10 +402,13 @@
           return;
         }
       } else {
-        renderNote({ text, timestamp: null }, "local-" + Date.now());
+        renderNote({ text, name, yearGroup, tutorSet, timestamp: null }, "local-" + Date.now());
       }
 
       input.value = "";
+      if (nameInput)  nameInput.value  = "";
+      if (yearInput)  yearInput.value  = "";
+      if (tutorInput) tutorInput.value = "";
       submitBtn.disabled = false;
       submitBtn.textContent = "Post it!";
       
@@ -241,127 +442,10 @@
       });
     }
 
-    // ─── SPIN THE WHEEL ──────────────────────────────────────────
-    window.spinWheel = function() {
-      const btn = document.getElementById("spin-btn");
-      const canvas = document.getElementById("wheel-canvas");
-      const ctx = canvas.getContext("2d");
-      const result = document.getElementById("spin-result");
-
-      if (btn.dataset.spinning === "true") return;
-      btn.dataset.spinning = "true";
-      btn.textContent = "Spinning…";
-      result.className = "spin-result hidden";
-
-      const segments = 12;
-      const segAngle = (2 * Math.PI) / segments;
-      const COLORS = ["#C0392B","#E74C3C","#922B21","#E74C3C","#C0392B","#922B21","#E74C3C","#C0392B","#E74C3C","#922B21","#C0392B","#E74C3C"];
-      const LABELS = ["Try Again","Ooh Close!","Nope!","Almost…","Try Again","So Close!","Nope!","Try Again","Almost!","Nope!","Try Again","Close…"];
-
-      const won = Math.random() < 0.0001;
-
-      let startAngle = parseFloat(canvas.dataset.angle || "0");
-      const extraSpins = (5 + Math.random() * 3) * 2 * Math.PI;
-      let targetAngle;
-
-      if (won) {
-        targetAngle = startAngle + extraSpins + (Math.PI * 2 - (startAngle % (Math.PI * 2)));
-      } else {
-        const randomSegment = Math.floor(Math.random() * segments);
-        targetAngle = startAngle + extraSpins + (randomSegment * segAngle);
-      }
-
-      const duration = 4000;
-      const start = performance.now();
-
-      function ease(t) {
-        return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
-      }
-
-      function drawWheel(angle) {
-        const cx = canvas.width / 2, cy = canvas.height / 2, r = cx - 10;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < segments; i++) {
-          const a0 = angle + i * segAngle, a1 = a0 + segAngle;
-          ctx.beginPath(); ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, r, a0, a1); ctx.closePath();
-          ctx.fillStyle = COLORS[i]; ctx.fill();
-          ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-          ctx.save(); ctx.translate(cx, cy); ctx.rotate(a0 + segAngle / 2);
-          ctx.textAlign = "right"; ctx.fillStyle = "#fff";
-          ctx.font = "bold 11px 'DM Sans', sans-serif";
-          ctx.fillText(LABELS[i], r - 10, 4);
-          ctx.restore();
-        }
-        ctx.beginPath(); ctx.arc(cx, cy, 22, 0, Math.PI*2);
-        ctx.fillStyle = "#1a1a1a"; ctx.fill();
-        ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans'";
-        ctx.textAlign = "center"; ctx.fillText("SPIN", cx, cy + 5);
-        ctx.beginPath(); ctx.moveTo(cx + r + 8, cy);
-        ctx.lineTo(cx + r - 10, cy - 10);
-        ctx.lineTo(cx + r - 10, cy + 10);
-        ctx.closePath(); ctx.fillStyle = "#1a1a1a"; ctx.fill();
-      }
-
-      function animate(now) {
-        const elapsed = now - start;
-        const t = Math.min(elapsed / duration, 1);
-        const currentAngle = startAngle + (targetAngle - startAngle) * ease(t);
-        drawWheel(currentAngle);
-        if (t < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          canvas.dataset.angle = targetAngle;
-          btn.dataset.spinning = "false";
-          btn.textContent = "Spin Again!";
-          result.classList.remove("hidden");
-          if (won) {
-            result.className = "spin-result win";
-            result.innerHTML = "🎉 WINNER! You won a bag of Haribos! Show this screen to Doug!";
-          } else {
-            result.className = "spin-result loss";
-            const msgs = ["Better luck next time!","So close… not really.","The Haribos remain safe.","Doug keeps his sweets today.","Try your luck again!"];
-            result.textContent = msgs[Math.floor(Math.random() * msgs.length)];
-          }
-        }
-      }
-
-      drawWheel(startAngle);
-      requestAnimationFrame(animate);
-    };
-
-    function initWheel() {
-      const canvas = document.getElementById("wheel-canvas");
-      if (!canvas) return;
-      canvas.dataset.angle = "0";
-      const ctx = canvas.getContext("2d");
-      const segments = 12, segAngle = (2*Math.PI)/segments;
-      const COLORS = ["#C0392B","#E74C3C","#922B21","#E74C3C","#C0392B","#922B21","#E74C3C","#C0392B","#E74C3C","#922B21","#C0392B","#E74C3C"];
-      const LABELS = ["Try Again","Ooh Close!","Nope!","Almost…","Try Again","So Close!","Nope!","Try Again","Almost!","Nope!","Try Again","Close…"];
-      const cx = canvas.width/2, cy = canvas.height/2, r = cx - 10;
-      for (let i = 0; i < segments; i++) {
-        const a0 = i*segAngle, a1 = a0+segAngle;
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a0,a1); ctx.closePath();
-        ctx.fillStyle = COLORS[i]; ctx.fill();
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-        ctx.save(); ctx.translate(cx,cy); ctx.rotate(a0+segAngle/2);
-        ctx.textAlign = "right"; ctx.fillStyle = "#fff";
-        ctx.font = "bold 11px 'DM Sans', sans-serif"; ctx.fillText(LABELS[i], r-10, 4);
-        ctx.restore();
-      }
-      ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2);
-      ctx.fillStyle = "#1a1a1a"; ctx.fill();
-      ctx.fillStyle = "#fff"; ctx.font = "bold 13px 'DM Sans'";
-      ctx.textAlign = "center"; ctx.fillText("SPIN", cx, cy+5);
-      ctx.beginPath(); ctx.moveTo(cx+r+8,cy); ctx.lineTo(cx+r-10,cy-10); ctx.lineTo(cx+r-10,cy+10);
-      ctx.closePath(); ctx.fillStyle = "#1a1a1a"; ctx.fill();
-    }
-
     // ─── INIT ─────────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", () => {
       initVoteCounter();
       initNotes();
-      initWheel();
 
       const nav = document.getElementById("nav");
       window.addEventListener("scroll", () => {
@@ -656,6 +740,31 @@
       margin-bottom: 48px;
       box-shadow: 0 2px 20px rgba(0,0,0,0.04);
     }
+    .note-identity-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 560px) {
+      .note-identity-row { grid-template-columns: 1fr; }
+    }
+    .note-identity-row input,
+    .note-identity-row select {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 400;
+      color: var(--charcoal); background: var(--cream);
+      border: 1.5px solid var(--border); border-radius: 10px;
+      padding: 10px 14px; outline: none;
+      transition: border-color 0.2s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .note-identity-row input:focus,
+    .note-identity-row select:focus { border-color: var(--red-mid); }
+    .note-identity-row input::placeholder { color: #bbb; font-weight: 300; }
+    .note-identity-row select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 34px; }
+    .note-identity-row select option[value=""] { color: #bbb; }
     .note-input-area textarea {
       width: 100%; min-height: 90px;
       font-family: 'DM Sans', sans-serif;
@@ -695,8 +804,10 @@
       display: flex; flex-direction: column; justify-content: space-between;
     }
     .sticky-note:hover { transform: scale(1.04) rotate(0deg) !important; box-shadow: 6px 6px 24px rgba(0,0,0,0.15); }
-    .note-text { font-size: 14px; line-height: 1.5; color: #333; word-break: break-word; }
-    .note-time { font-size: 11px; color: #999; margin-top: 12px; font-family: 'Space Mono', monospace; }
+    .note-text { font-size: 14px; line-height: 1.5; color: #333; word-break: break-word; flex: 1; }
+    .note-footer { margin-top: 12px; display: flex; flex-direction: column; gap: 2px; }
+    .note-author { font-size: 12px; color: #666; font-weight: 600; font-style: italic; }
+    .note-time { font-size: 11px; color: #999; font-family: 'Space Mono', monospace; }
     @keyframes noteAppear { from { opacity:0; transform:scale(0.8) rotate(-3deg); } to { opacity:1; } }
     .note-appear { animation: noteAppear 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
@@ -733,40 +844,6 @@
     }
     .modal-close:hover { color: #333; }
 
-    /* ── SPIN WHEEL ─────────────────────────────────────────── */
-    #spin { background: var(--white); }
-    .spin-layout {
-      display: flex; align-items: center; gap: 64px; flex-wrap: wrap;
-    }
-    .spin-left { flex: 1; min-width: 260px; }
-    .spin-right { flex: 0 0 auto; }
-    #wheel-canvas {
-      border-radius: 50%;
-      box-shadow: 0 8px 40px rgba(192,57,43,0.2);
-      display: block;
-    }
-    #spin-btn {
-      margin-top: 20px; width: 100%;
-      background: var(--red-mid); color: #fff;
-      border: none; border-radius: 999px;
-      padding: 16px 32px; font-size: 16px; font-weight: 600;
-      cursor: pointer; transition: all 0.2s;
-    }
-    #spin-btn:hover { background: var(--red-dark); transform: translateY(-2px); }
-    .spin-odds {
-      font-family: 'Space Mono', monospace;
-      font-size: 12px; color: var(--muted);
-      margin-top: 12px; text-align: center;
-    }
-    .spin-result {
-      margin-top: 24px; padding: 16px 24px;
-      border-radius: 12px; font-size: 16px; font-weight: 600;
-      text-align: center;
-    }
-    .spin-result.hidden { display: none; }
-    .spin-result.win { background: #EAFAF1; color: #1E8449; border: 1.5px solid #A9DFBF; }
-    .spin-result.loss { background: var(--red-pale); color: var(--red-dark); border: 1.5px solid var(--red-light); }
-
     /* ── FOOTER ─────────────────────────────────────────────── */
     footer {
       background: var(--charcoal); color: rgba(255,255,255,0.4);
@@ -794,9 +871,6 @@
       .nav-links { display: none; }
       section { padding: 72px 20px; }
       .vote-number { font-size: 80px; }
-      #wheel-canvas { width: 260px !important; height: 260px !important; }
-      .spin-layout { flex-direction: column-reverse; }
-      .spin-right { align-self: center; }
     }
   </style>
 </head>
@@ -809,7 +883,7 @@
       <li><a href="#manifesto">Manifesto</a></li>
       <li><a href="#vote">Vote</a></li>
       <li><a href="#ideas">Ideas</a></li>
-      <li><a href="#spin">Spin</a></li>
+
     </ul>
   </nav>
 
@@ -909,12 +983,37 @@
       <h2 class="section-title reveal">Your Ideas,<br/><span class="pop">Your School.</span></h2>
       <p class="section-body reveal">
         Drop a suggestion below. What would make The Suthers better?
-        All notes appear on the board for everyone to see, but don't worry they won't see who you are...
+        Your name, year group and tutor set will be shown on your note so the community knows who to thank — and so every idea is properly attributed.
       </p>
       <div class="note-input-area reveal">
+        <div class="note-identity-row">
+          <input
+            type="text"
+            id="note-name"
+            placeholder="First name *"
+            maxlength="30"
+            autocomplete="given-name"
+          />
+          <select id="note-year">
+            <option value="">Year group *</option>
+            <option value="7">Year 7</option>
+            <option value="8">Year 8</option>
+            <option value="9">Year 9</option>
+            <option value="10">Year 10</option>
+            <option value="11">Year 11</option>
+            
+          </select>
+          <input
+            type="text"
+            id="note-tutor"
+            placeholder="Tutor set *"
+            maxlength="10"
+            autocomplete="off"
+          />
+        </div>
         <textarea
           id="note-input"
-          placeholder="What one thing would make The Suthers better? (anonymous, max 160 chars)"
+          placeholder="What one thing would make The Suthers better? (Keep it under 160 characters)"
           maxlength="160"
         ></textarea>
         <div class="note-input-footer">
@@ -932,30 +1031,7 @@
     </div>
   </section>
 
-  <section id="spin">
-    <div class="section-inner">
-      <span class="section-label reveal">A Little Fun</span>
-      <h2 class="section-title reveal">Spin to<br/><span class="pop">Win.</span></h2>
-      <div class="spin-layout">
-        <div class="spin-left reveal">
-          <p style="font-size:17px;line-height:1.8;color:var(--muted);font-weight:300;margin-bottom:28px;">
-            Think you're lucky? Give the wheel a spin.
-            There's a <strong style="color:var(--red-mid);font-weight:700;">1-in-Never</strong> chance 
-            of winning a real bag of Haribos, personally delivered by Doug himself.
-          </p>
-          <p style="font-size:14px;color:var(--muted);font-weight:300;font-style:italic;">
-            The odds are intentionally brutal
-          </p>
-          <div id="spin-result" class="spin-result hidden"></div>
-        </div>
-        <div class="spin-right reveal reveal-delay-2">
-          <canvas id="wheel-canvas" width="300" height="300"></canvas>
-          <button id="spin-btn" onclick="spinWheel()">Spin the Wheel!</button>
-          <p class="spin-odds">Odds: 1 in never · Prize: Haribos</p>
-        </div>
-      </div>
-    </div>
-  </section>
+
 
  
 
@@ -971,6 +1047,7 @@
     <div id="modal-card">
       <button class="modal-close" onclick="closeNoteModal()">✕</button>
       <p id="modal-text"></p>
+      <span id="modal-author" style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:6px;"></span>
       <span id="modal-time"></span>
     </div>
   </div>
