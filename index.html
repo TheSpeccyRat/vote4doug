@@ -244,7 +244,7 @@
       "someone","anyone","everyone","whoever","whatever","idk","dunno","random","fake",
       "notme","notelling","wontay","mystery","ghost","shadow","void","blank","empty",
       "xxxxx","xxxxxx","aaaa","aaaaa","zzzz","zzzzz","qqqq","1234","abcd","asdf",
-      "me","myself","you","them","him","her","they","it","name","firstname","example","myname"
+      "me","myself","you","them","him","her","they","it","name","firstname","example","myname" , "Nunya","dontvotedoug" , "matterbaby" , "ilovemen" , "mikeoxlong" , 
     ];
 
     function containsEvasion(text) {
@@ -972,6 +972,60 @@
         I'm voting for Doug
       </button>
       <p id="vote-message" class="vote-msg"></p>
+    </div>
+  </section>
+  
+   <section id="ideas">
+    <div class="section-inner">
+      <span class="section-label reveal">Community Board</span>
+      <h2 class="section-title reveal">Your Ideas,<br/><span class="pop">Your School.</span></h2>
+      <p class="section-body reveal">
+        Drop a suggestion below. What would make The Suthers better?
+        Your name, year group and tutor set will be shown on your note so the community knows who to thank — and so every idea is properly attributed.
+      </p>
+      <div class="note-input-area reveal">
+        <div class="note-identity-row">
+          <input
+            type="text"
+            id="note-name"
+            placeholder="First name *"
+            maxlength="30"
+            autocomplete="given-name"
+          />
+          <select id="note-year">
+            <option value="">Year group *</option>
+            <option value="7">Year 7</option>
+            <option value="8">Year 8</option>
+            <option value="9">Year 9</option>
+            <option value="10">Year 10</option>
+            <option value="11">Year 11</option>
+            
+          </select>
+          <input
+            type="text"
+            id="note-tutor"
+            placeholder="Tutor set *"
+            maxlength="10"
+            autocomplete="off"
+          />
+        </div>
+        <textarea
+          id="note-input"
+          placeholder="What one thing would make The Suthers better? (Keep it under 160 characters)"
+          maxlength="160"
+        ></textarea>
+        <div class="note-input-footer">
+          <span id="char-counter">0/160</span>
+          <button id="note-submit" onclick="submitNote()">Post it!</button>
+        </div>
+        <p id="note-msg" class="note-feedback"></p>
+      </div>
+
+      <div id="notes-board">
+        <p class="empty-board-msg">
+          No ideas yet — be the first to share yours! 📌
+        </p>
+      </div>
     </div>
   </section>
 
