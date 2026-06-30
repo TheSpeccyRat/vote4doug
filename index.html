@@ -13,7 +13,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, collection, addDoc, onSnapshot, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
    
     const firebaseConfig = {
@@ -428,16 +428,24 @@
 
     async function initNotes() {
       if (!firebaseReady) return;
-      const q = query(collection(db, "notes"), orderBy("timestamp", "asc"));
+      const q = query(collection(db, "notes"), where("featured", "==", true), orderBy("timestamp", "asc"));
       onSnapshot(q, (snapshot) => {
         if (snapshot.empty) {
           const board = document.getElementById("notes-board");
           if (board && !board.querySelector(".empty-board-msg")) {
-            board.innerHTML = `<p class="empty-board-msg">No ideas yet — be the first to share yours! 📌</p>`;
+            board.innerHTML = `<p class="empty-board-msg">Featured ideas coming soon — check back next week! 📌</p>`;
           }
         }
         snapshot.docChanges().forEach(change => {
           if (change.type === "added") renderNote(change.doc.data(), change.doc.id);
+          if (change.type === "removed") {
+            const el = document.getElementById("note-" + change.doc.id);
+            if (el) el.remove();
+            const board = document.getElementById("notes-board");
+            if (board && !board.querySelector(".sticky-note")) {
+              board.innerHTML = `<p class="empty-board-msg">Featured ideas coming soon — check back next week! 📌</p>`;
+            }
+          }
         });
       });
     }
@@ -1020,8 +1028,9 @@
         </div>
         <p id="note-msg" class="note-feedback"></p>
       </div>
-
-     
+      <div id="notes-board">
+        
+      </div>
     </div>
   </section>
 
